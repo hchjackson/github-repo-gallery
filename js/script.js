@@ -3,6 +3,8 @@ const username = "hchjackson";
 const repoList = document.querySelector(".repo-list"); // List of repoList
 const repos = document.querySelector(".repos"); // All repos container where all repo info appears
 const repoData = document.querySelector(".repo-data"); // Where individual repo data will appear
+const viewReposButton = document.querySelector(".view-repos"); // Back to Repo Gallery button
+const filterInput = document.querySelector(".filter-repos"); // select input from search
 
 // Fetching info from my GitHub profile
 const gitUserInfo = async function () {
@@ -30,11 +32,11 @@ const displayUserInfo = function (data) {
     </div>
   `;
   overview.append(div);
-  gitRepos();
+  gitRepos(username);
 };
 
 // Fetching my repos
-const gitRepos = async function () {
+const gitRepos = async function (username) {
   const fetchRepos = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
   const repoData = await fetchRepos.json();
   // console.log(repoData);
@@ -43,6 +45,7 @@ const gitRepos = async function () {
 
 // Displaying info about each repo
 const displayRepoInfo = function (repos) {
+  filterInput.classList.remove("hide"); // Show the search box
   for (const repo of repos) {
     const listItem = document.createElement("li");
     listItem.classList.add("repo");
@@ -83,9 +86,11 @@ const selectedRepoInfo = async function (repoName) {
 
 // Display Specific Repo Info
 const displaySelectedRepoInfo = function (repoInfo, languages) {
+  viewReposButton.classList.remove("hide"); // Show Back to Repo Gallery button
   repoData.innerHTML = ""; // Empty out html
   repoData.classList.remove("hide"); // Show "repo-data" element
   repos.classList.add("hide"); // Hide "repos" element
+
   const div = document.createElement("div");
   div.innerHTML = `
     <h3>Name: ${repoInfo.name}</h3>
@@ -96,3 +101,28 @@ const displaySelectedRepoInfo = function (repoInfo, languages) {
   `;
   repoData.append(div);
 };
+
+// Add a Click Event to the Back button
+viewReposButton.addEventListener("click", function () {
+  repos.classList.remove("hide"); // Unhide "repos" element
+  repoData.classList.add("hide"); // Hide "repo-data" element
+  viewReposButton.classList.add("hide"); // Hide Back to Repo Gallery button
+});
+
+// Add Input Event to the Search box --> Dynamic search feature
+filterInput.addEventListener("input", function (e) {
+  const searchText = e.target.value;
+  console.log(searchText);
+  const repos = document.querySelectorAll(".repo");
+  const searchLowerText = searchText.toLowerCase();
+
+  for(const repo of repos) {
+    const repoLowerText = repo.innerText.toLowerCase();
+    if (repoLowerText.includes(searchLowerText)) {
+      repo.classList.remove("hide"); // Shows repo that matches search criteria
+    }
+    else {
+      repo.classList.add("hide"); // Hides repo that doesn't matches search criteria
+    }
+  }
+});
